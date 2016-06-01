@@ -146,19 +146,26 @@ static void UserAppSM_Idle(void)
 {
   static LedRateType aeBlinkRate[] = {LED_1HZ, LED_2HZ, LED_4HZ, LED_8HZ};
   static u8 u8LedRateIndex=0;
-  static u8 u8LedSwitch=0;
-  
+  static bool bYELLOW=TRUE;
+  static u8 u8LedRateStart=0;
   if(WasButtonPressed(BUTTON1))
   {
     /* Be sure to acknowledge the button press */
     ButtonAcknowledge(BUTTON1);
-    LedBlink(YELLOW,aeBlinkRate[u8LedRateIndex]);
-    u8LedRateIndex++;
-    u8LedSwitch=0;
-    if(u8LedRateIndex==4)
+    if(bYELLOW==FALSE)
     {
-      u8LedRateIndex=0;
-      u8LedSwitch=1;
+      if(u8LedRateStart==1)
+      {
+        u8LedRateIndex=0;
+        u8LedRateStart=0;
+        
+      }
+      LedBlink(YELLOW,aeBlinkRate[u8LedRateIndex]);
+      u8LedRateIndex++;
+      if(u8LedRateIndex==4)
+      {
+        u8LedRateIndex=0;
+      }
     }
   }
   
@@ -166,17 +173,16 @@ static void UserAppSM_Idle(void)
   {
     /* Be sure to acknowledge the button press */
     ButtonAcknowledge(BUTTON2);
-    LedOff(YELLOW);
-    if(u8LedRateIndex!=0)
+    u8LedRateStart=1;
+    if(bYELLOW)
     {
-      u8LedRateIndex--;
+      bYELLOW=FALSE;
+      LedOn(YELLOW);
     }
     else
     {
-      if(u8LedSwitch==1)
-      {
-        u8LedRateIndex=3;
-      }
+      bYELLOW=TRUE;
+      LedOff(YELLOW);
     }
   }
   
