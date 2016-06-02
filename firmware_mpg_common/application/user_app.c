@@ -88,14 +88,7 @@ Promises:
 */
 void UserAppInitialize(void)
 {
-  LedOff(WHITE);
-  LedOff(PURPLE);
-  LedOff(BLUE);
-  LedOff(CYAN);
-  LedOff(GREEN);
-  LedOff(YELLOW);
-  LedOff(ORANGE);
-  LedOff(RED);
+  
   /* If good initialization, set state to Idle */
   if( 1 )
   {
@@ -144,58 +137,6 @@ State Machine Function Definitions
 /* Wait for a message to be queued */
 static void UserAppSM_Idle(void)
 {
-  static LedRateType aeBlinkRate[] = {LED_1HZ, LED_2HZ, LED_4HZ, LED_8HZ};
-  static u8 u8LedRateIndex=0;
-  static bool bYELLOW=TRUE;
-  static u8 u8LedRateStart=0;
-  if(WasButtonPressed(BUTTON1))
-  {
-    /* Be sure to acknowledge the button press */
-    ButtonAcknowledge(BUTTON1);
-    if(bYELLOW==FALSE)
-    {
-      if(u8LedRateStart==1)
-      {
-        u8LedRateIndex=0;
-        u8LedRateStart=0;
-        
-      }
-      LedBlink(YELLOW,aeBlinkRate[u8LedRateIndex]);
-      u8LedRateIndex++;
-      if(u8LedRateIndex==4)
-      {
-        u8LedRateIndex=0;
-      }
-    }
-  }
-  
-  if(WasButtonPressed(BUTTON2))
-  {
-    /* Be sure to acknowledge the button press */
-    ButtonAcknowledge(BUTTON2);
-    u8LedRateStart=1;
-    if(bYELLOW)
-    {
-      bYELLOW=FALSE;
-      LedOn(YELLOW);
-    }
-    else
-    {
-      bYELLOW=TRUE;
-      LedOff(YELLOW);
-    }
-  }
-  
-  if( IsButtonPressed(BUTTON0) )
-  {
-    /* The button is currently pressed, so make sure the LED is on */
-    LedOn(PURPLE);
-  }
-  else
-  {
-    /* The button is not pressed, so make sure the LED is off */
-    LedOff(PURPLE);
-  }
     
 } /* end UserAppSM_Idle() */
      
