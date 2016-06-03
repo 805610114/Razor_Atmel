@@ -60,7 +60,8 @@ Variable names shall start with "UserApp_" and be declared as static.
 static fnCode_type UserApp_StateMachine;            /* The state machine function pointer */
 static u32 UserApp_u32Timeout;                      /* Timeout counter used across states */
 
-
+static u8 UserApp_au8MyName[]="JunFeng_Zhang";
+static u8 UserApp_CursorPosition;
 /**********************************************************************************************************************
 Function Definitions
 **********************************************************************************************************************/
@@ -88,6 +89,22 @@ Promises:
 */
 void UserAppInitialize(void)
 {
+  u8 au8Message[] ="Hello world!";
+  
+  
+  LCDMessage(LINE1_START_ADDR,au8Message);
+  LCDClearChars(LINE1_START_ADDR + 13,3);
+  LCDCommand(LCD_CLEAR_CMD);
+  
+  /*Add button labels above each of the four buttons*/
+  LCDMessage(LINE1_START_ADDR,UserApp_au8MyName);
+  LCDMessage(LINE2_START_ADDR,"O");
+  LCDMessage(LINE2_START_ADDR+6,"1");
+  LCDMessage(LINE2_START_ADDR+13,"2");
+  LCDMessage(LINE2_END_ADDR,"3");
+  
+  LCDCommand(LCD_HOME_CMD);
+  UserApp_CursorPosition=LINE1_START_ADDR;
   
   /* If good initialization, set state to Idle */
   if( 1 )
@@ -137,7 +154,64 @@ State Machine Function Definitions
 /* Wait for a message to be queued */
 static void UserAppSM_Idle(void)
 {
-    
+  static bool bCursorOn =FALSE;
+  static u8 u8Count=0;
+  /*BUTTON0 toggles the cursor on and off*/
+  if(WasButtonPressed(BUTTON0))
+  {
+    ButtonAcknowledge(BUTTON0);
+    /*Cursor is on,so turn it off*/
+    if(bCursorOn)
+    {
+      LCDCommand(LCD_DISPLAY_CMD|LCD_DISPLAY_ON);
+      bCursorOn = FALSE;
+    }
+
+    else
+    {
+      /*Cursor is off,so turn it on*/
+      LCDCommand(LCD_DISPLAY_CMD|LCD_DISPLAY_ON|LCD_DISPLAY_BLINK);
+      bCursorOn = TRUE; 
+    }
+  }  
+  
+  /*When button3 pressed,move the name*/
+   if(WasButtonPressed(BUTTON3))
+  {
+    ButtonAcknowledge(BUTTON3);
+    u8Count++;
+    if(u8Count<8)
+    {
+      LCDMessage(LINE1_START_ADDR+u8Count,UserApp_au8MyName);
+      LCDClearChars(LINE1_START_ADDR,u8Count);
+    }
+    else
+    {
+      u8Count=0;
+      LCDMessage(LINE1_START_ADDR,UserApp_au8MyName);
+      LCDClearChars(LINE1_START_ADDR+13,7);
+      
+    }  
+  } /* end BUTTON3 */
+  
+  /*When button2 pressed,move the name*/
+   if(WasButtonPressed(BUTTON2))
+  {
+    ButtonAcknowledge(BUTTON2);
+   
+    if(u8Count>0)
+    {
+      u8Count--;
+      LCDMessage(LINE1_START_ADDR+u8Count,UserApp_au8MyName);
+      LCDClearChars(LINE1_START_ADDR+u8Count+13,7-u8Count);    
+    }
+    else
+    {
+      LCDMessage(LINE1_START_ADDR+7,UserApp_au8MyName);
+      LCDClearChars(LINE1_START_ADDR,7);
+      u8Count=7;
+    }  
+  } /* end BUTTON3 */
 } /* end UserAppSM_Idle() */
      
 
