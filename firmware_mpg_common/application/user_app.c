@@ -88,14 +88,7 @@ Promises:
 */
 void UserAppInitialize(void)
 {
-  LedOff(CYAN);
-  LedOff(GREEN);
-  LedOff(YELLOW);
-  LedOff(ORANGE);
-  LedOff(RED);
-  LedOff(BLUE);
-  LedOff(WHITE);
-  LedOff(PURPLE);
+  
   /* If good initialization, set state to Idle */
   if( 1 )
   {
@@ -144,64 +137,6 @@ State Machine Function Definitions
 /* Wait for a message to be queued */
 static void UserAppSM_Idle(void)
 {
-    static u8 u8Counter = 0;
-    static u16 u16CycleCount=0;
-    static u16 u16TimeCounter = 0;
-    
-    u16TimeCounter++;
-    if(u16TimeCounter==100)
-    {
-      u16TimeCounter=0;
-      u8Counter++;
-      if(u16CycleCount==0)
-      {
-        switch(u8Counter)
-        {
-        case 1:
-          LedOn(WHITE);
-          LedOn(RED);
-          break;
-        case 2:
-          LedOn(PURPLE);
-          LedOn(ORANGE);
-          break;
-        case 3:
-          LedOn(BLUE);
-         LedOn(YELLOW); 
-          break;
-        case 4:
-          LedOn(CYAN);
-          LedOn(GREEN);
-          u8Counter=0;
-          u16CycleCount=1;
-          break;
-        }
-      }
-      else
-      {
-        switch(u8Counter)
-        {
-        case 1:
-          LedOff(WHITE);
-          LedOff(RED);
-          break;
-        case 2:
-          LedOff(PURPLE);
-          LedOff(ORANGE);
-          break;
-        case 3:
-          LedOff(BLUE);
-          LedOff(YELLOW); 
-          break;
-        case 4:
-          LedOff(CYAN);
-          LedOff(GREEN);
-          u8Counter=0;
-          u16CycleCount=0;
-          break;
-        }
-      }
-    }
     
 } /* end UserAppSM_Idle() */
      
