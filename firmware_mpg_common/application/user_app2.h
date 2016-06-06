@@ -1,10 +1,10 @@
 /**********************************************************************************************************************
-File: user_app.h                                                                
+File: user_app22.h                                                                
 
 ----------------------------------------------------------------------------------------------------------------------
-To start a new task using this user_app as a template:
-1. Follow the instructions at the top of user_app.c
-2. Use ctrl-h to find and replace all instances of "user_app" with "yournewtaskname"
+To start a new task using this user_app22 as a template:
+1. Follow the instructions at the top of user_app22.c
+2. Use ctrl-h to find and replace all instances of "user_app2" with "yournewtaskname"
 3. Use ctrl-h to find and replace all instances of "UserApp" with "YourNewTaskName"
 4. Use ctrl-h to find and replace all instances of "USER_APP" with "YOUR_NEW_TASK_NAME"
 5. Add #include yournewtaskname.h" to configuration.h
@@ -17,10 +17,8 @@ Header file for yournewtaskname.c
 
 **********************************************************************************************************************/
 
-#ifndef __USER_APP_H
-#define __USER_APP_H
-
-#define USER_INPUT_BUFFER_SIZE  (u16)(DEBUG_SCANF_BUFFER_SIZE + 1)    /* Size of buffer for scanf messages */
+#ifndef __USER_APP2_H
+#define __USER_APP2_H
 
 /**********************************************************************************************************************
 Type Definitions
@@ -44,8 +42,8 @@ Function Declarations
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* Protected functions                                                                                                */
 /*--------------------------------------------------------------------------------------------------------------------*/
-void UserAppInitialize(void);
-void UserAppRunActiveState(void);
+void UserApp2Initialize(void);
+void UserApp2RunActiveState(void);
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -56,13 +54,13 @@ void UserAppRunActiveState(void);
 /***********************************************************************************************************************
 State Machine Declarations
 ***********************************************************************************************************************/
-static void UserAppSM_Idle(void);    
+static void UserApp2SM_Idle(void);    
 
-static void UserAppSM_Error(void);         
-static void UserAppSM_FailedInit(void);        
+static void UserApp2SM_Error(void);         
+static void UserApp2SM_FailedInit(void);        
 
 
-#endif /* __USER_APP_H */
+#endif /* __USER_APP2_H */
 
 
 /*--------------------------------------------------------------------------------------------------------------------*/
