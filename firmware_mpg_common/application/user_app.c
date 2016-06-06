@@ -52,6 +52,11 @@ extern volatile u32 G_u32ApplicationFlags;             /* From main.c */
 extern volatile u32 G_u32SystemTime1ms;                /* From board-specific source file */
 extern volatile u32 G_u32SystemTime1s;                 /* From board-specific source file */
 
+extern AntSetupDataType G_stAntSetupData;                         /* From ant.c */
+
+extern u32 G_u32AntApiCurrentDataTimeStamp;                       /* From ant_api.c */
+extern AntApplicationMessageType G_eAntApiCurrentMessageClass;    /* From ant_api.c */
+extern u8 G_au8AntApiCurrentData[ANT_APPLICATION_MESSAGE_BYTES];  /* From ant_api.c */
 
 /***********************************************************************************************************************
 Global variable definitions with scope limited to this local application.
@@ -88,10 +93,23 @@ Promises:
 */
 void UserAppInitialize(void)
 {
+  LCDClearChars(LINE1_START_ADDR,20);
   
+ /* Configure ANT for this application */
+  G_stAntSetupData.AntChannel          = ANT_CHANNEL_USERAPP;
+  G_stAntSetupData.AntSerialLo         = ANT_SERIAL_LO_USERAPP;
+  G_stAntSetupData.AntSerialHi         = ANT_SERIAL_HI_USERAPP;
+  G_stAntSetupData.AntDeviceType       = ANT_DEVICE_TYPE_USERAPP;
+  G_stAntSetupData.AntTransmissionType = ANT_TRANSMISSION_TYPE_USERAPP;
+  G_stAntSetupData.AntChannelPeriodLo  = ANT_CHANNEL_PERIOD_LO_USERAPP;
+  G_stAntSetupData.AntChannelPeriodHi  = ANT_CHANNEL_PERIOD_HI_USERAPP;
+  G_stAntSetupData.AntFrequency        = ANT_FREQUENCY_USERAPP;
+  G_stAntSetupData.AntTxPower          = ANT_TX_POWER_USERAPP;
+
   /* If good initialization, set state to Idle */
-  if( 1 )
+  if( AntChannelConfig(ANT_MASTER) )
   {
+    AntOpenChannel();
     UserApp_StateMachine = UserAppSM_Idle;
   }
   else
@@ -137,7 +155,81 @@ State Machine Function Definitions
 /* Wait for a message to be queued */
 static void UserAppSM_Idle(void)
 {
+  static u8 au8TestMessage[] = {0, 0, 0, 0, 0xA5, 0, 0, 0};
+  static u16 u16Colour[]={WHITE,PURPLE,BLUE,CYAN,GREEN,YELLOW,ORANGE,RED};
+  static u8 u8TimeStamp[20];
+  static u8 u8NumberToAscii;
+  u8 au8DataContent[]="xxxxxxxxxxxxxxxx";
     
+  /*Check if any new ANT infomation is in the ANT buffer*/
+  if(AntReadData())
+  {
+    /*Check if it's ANT_DATA message*/
+    if(G_eAntApiCurrentMessageClass == ANT_DATA)
+    {
+      /*Yay! We got some data */
+      /*Parse CurrentData into au8DataContent*/
+      for(u8 i=0;i<ANT_DATA_BYTES;i++)
+      {
+        au8DataContent[2 * i]     = HexToASCIICharUpper(G_au8AntApiCurrentData[i] / 16);
+        au8DataContent[2 * i + 1] = HexToASCIICharUpper(G_au8AntApiCurrentData[i] % 16);
+      }
+      
+      /*Turn on the led when is sent in the led's position*/
+      for(u8 j=0;j<8;j++)
+      {
+        if(((au8DataContent[2*j]-'F')==0)&&((au8DataContent[2*j+1]-'F')==0))
+        {
+          LedOn(u16Colour[j]);
+        }
+      }
+      
+      u8NumberToAscii=NumberToAscii(G_u32AntApiCurrentDataTimeStamp,u8TimeStamp);
+      LCDMessage(LINE1_START_ADDR,u8TimeStamp);
+
+      
+      LCDMessage(LINE2_START_ADDR,au8DataContent);
+    }
+    else if(G_eAntApiCurrentMessageClass == ANT_TICK)
+    {
+      /*An event has  been received or some other ANT status message*/
+      /*Update the message counter*/
+      au8TestMessage[7]++;
+      if(au8TestMessage[7]==0)
+      {
+        au8TestMessage[6]++;
+        if(au8TestMessage[6]==0)
+        {
+          au8TestMessage[5]++;
+        }        
+      }
+      
+      /* Check all the buttons and update au8TestMessage according to the button state */ 
+      au8TestMessage[0] = 0x00;
+      if( IsButtonPressed(BUTTON0) )
+      {
+      au8TestMessage[0] = 0xff;
+      }
+      au8TestMessage[1] = 0x00;
+      if( IsButtonPressed(BUTTON0) )
+      {
+      au8TestMessage[1] = 0xff;
+      }
+      au8TestMessage[2] = 0x00;
+      if( IsButtonPressed(BUTTON0) )
+      {
+      au8TestMessage[2] = 0xff;
+      }
+      au8TestMessage[3] = 0x00;
+      if( IsButtonPressed(BUTTON0) )
+      {
+      au8TestMessage[3] = 0xff;
+      }
+      AntQueueBroadcastMessage(au8TestMessage);
+    }
+  }
+ 
+  
 } /* end UserAppSM_Idle() */
      
 
