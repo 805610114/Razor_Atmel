@@ -182,6 +182,10 @@ static void UserAppSM_Idle(void)
         {
           LedOn(u16Colour[j]);
         }
+        else
+        {
+          LedOff(u16Colour[j]);
+        }
       }
       
       u8NumberToAscii=NumberToAscii(G_u32AntApiCurrentDataTimeStamp,u8TimeStamp);
