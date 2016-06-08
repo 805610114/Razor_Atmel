@@ -52,6 +52,12 @@ extern volatile u32 G_u32ApplicationFlags;             /* From main.c */
 extern volatile u32 G_u32SystemTime1ms;                /* From board-specific source file */
 extern volatile u32 G_u32SystemTime1s;                 /* From board-specific source file */
 
+extern AntSetupDataType G_stAntSetupData;                         /* From ant.c */
+
+extern u32 G_u32AntApiCurrentDataTimeStamp;                       /* From ant_api.c */
+extern AntApplicationMessageType G_eAntApiCurrentMessageClass;    /* From ant_api.c */
+extern u8 G_au8AntApiCurrentData[ANT_APPLICATION_MESSAGE_BYTES];  /* From ant_api.c */
+
 
 /***********************************************************************************************************************
 Global variable definitions with scope limited to this local application.
@@ -88,7 +94,20 @@ Promises:
 */
 void UserAppInitialize(void)
 {
+  G_stAntSetupData.AntChannel          = ANT_CHANNEL_USERAPP;
+  G_stAntSetupData.AntSerialLo         = ANT_SERIAL_LO_USERAPP;
+  G_stAntSetupData.AntSerialHi         = ANT_SERIAL_HI_USERAPP;
+  G_stAntSetupData.AntDeviceType       = ANT_DEVICE_TYPE_USERAPP;
+  G_stAntSetupData.AntTransmissionType = ANT_TRANSMISSION_TYPE_USERAPP;
+  G_stAntSetupData.AntChannelPeriodLo  = ANT_CHANNEL_PERIOD_LO_USERAPP;
+  G_stAntSetupData.AntChannelPeriodHi  = ANT_CHANNEL_PERIOD_HI_USERAPP;
+  G_stAntSetupData.AntFrequency        = ANT_FREQUENCY_USERAPP;
+  G_stAntSetupData.AntTxPower          = ANT_TX_POWER_USERAPP;
   
+  if(AntChannelConfig(ANT_MASTER))
+  {
+    LedOn(GREEN);
+  }
   /* If good initialization, set state to Idle */
   if( 1 )
   {
@@ -137,7 +156,81 @@ State Machine Function Definitions
 /* Wait for a message to be queued */
 static void UserAppSM_Idle(void)
 {
+  static u8 u8ANT_DATA[]="ANT_DATA:xx-xx-xx-xx-xx-xx-xx-xx";
+  static u8 u8ANT_TICK[]="ANT_TICK:xx-xx-xx-xx-xx-xx-xx-xx";
+  static u8 au8TestMessage[] = {0, 0, 0, 0, 0, 0, 0, 0};
     
+  if(WasButtonPressed(BUTTON0))
+  {
+    ButtonAcknowledge(BUTTON0);
+
+    AntOpenChannel();
+  }
+  
+  if(WasButtonPressed(BUTTON1))
+  {
+    ButtonAcknowledge(BUTTON1);
+ 
+    AntCloseChannel();
+  }
+  if(AntRadioStatus()==ANT_OPEN)
+  {
+    LedOn(BLUE);
+    LedOff(RED);
+  }
+  else
+  {
+    LedOn(RED);
+    LedOff(BLUE);
+  }
+   if(WasButtonPressed(BUTTON2))
+  {
+    ButtonAcknowledge(BUTTON2);
+    
+    /*BUTTON2 sends a counter to the other board .*/
+    au8TestMessage[7]++;
+    if(au8TestMessage[7] == 0)
+    {
+    au8TestMessage[6]++;
+    if(au8TestMessage[6] == 0)
+    {
+    au8TestMessage[5]++;
+    }
+    }
+    AntQueueBroadcastMessage(au8TestMessage);
+
+  }    
+
+  if( AntReadData())
+  {
+     /* New data message: check what it is */
+    if(G_eAntApiCurrentMessageClass == ANT_DATA)
+    {
+      /* We got some data */
+      for(u8 i = 0; i < 8; i++)
+      {
+        u8ANT_DATA[3*i+9]= HexToASCIICharUpper(G_au8AntApiCurrentData[i] / 16);
+        u8ANT_DATA[3*i+10] = HexToASCIICharUpper(G_au8AntApiCurrentData[i] % 16);
+        DebugLineFeed();
+        DebugPrintf(u8ANT_DATA);
+      }
+    }
+    else if(G_eAntApiCurrentMessageClass == ANT_TICK)
+    {
+     /* A channel period has gone by: typically this is when new data should be queued to be sent */
+     for(u8 i = 0; i < 8; i++)
+      {
+        u8ANT_TICK[3*i+9] = HexToASCIICharUpper(G_au8AntApiCurrentData[i] / 16);
+        u8ANT_TICK[3*i+10] = HexToASCIICharUpper(G_au8AntApiCurrentData[i] % 16);
+        DebugLineFeed();
+        DebugPrintf(u8ANT_TICK);
+      } 
+     
+
+      
+
+    }
+  } 
 } /* end UserAppSM_Idle() */
      
 
